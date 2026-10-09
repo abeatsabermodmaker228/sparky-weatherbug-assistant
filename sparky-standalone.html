@@ -1,545 +1,474 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#667eea">
-    <meta name="description" content="Sparky the Weatherbug - AI Weather Assistant">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Sparky - Weather Assistant</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .app-container {
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: auto;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-        }
-        
-        header h1 {
-            font-size: 2.5em;
-            margin-bottom: 5px;
-        }
-        
-        header p {
-            opacity: 0.9;
-            font-size: 0.95em;
-        }
-        
-        main {
-            padding: 30px 20px;
-            flex: 1;
-        }
-        
-        .input-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        input[type="text"] {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-        
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #764ba2;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        button {
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            font-size: 1em;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .mic-button {
-            width: 50px;
-            height: 50px;
-            padding: 0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em;
-        }
-        
-        .mic-button.listening {
-            animation: micPulse 0.5s infinite;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ff0000 100%);
-        }
-        
-        @keyframes micPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .response-section {
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .alert-display {
-            font-size: 4em;
-            text-align: center;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .bug-display {
-            font-size: 3em;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .weather-text {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            line-height: 1.8;
-            margin-bottom: 15px;
-            white-space: pre-wrap;
-            font-size: 0.95em;
-            font-family: monospace;
-        }
-        
-        .locations-btn {
-            width: 100%;
-            margin-bottom: 20px;
-            padding: 10px;
-            font-size: 0.9em;
-        }
-        
-        .location-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .location-btn {
-            padding: 10px;
-            font-size: 0.85em;
-            background: #f0f4ff;
-            color: #667eea;
-            border: 1px solid #667eea;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-        
-        .location-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-        
-        .loading {
-            text-align: center;
-            display: none;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading p {
-            color: #667eea;
-            margin-top: 10px;
-        }
-        
-        footer {
-            background: #f5f5f5;
-            padding: 20px;
-            text-align: center;
-            font-size: 0.85em;
-            color: #666;
-            border-top: 1px solid #eee;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#667eea" />
+  <title>Sparky Weather Assistant</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #eef4ff 0%, #dfeaff 35%, #f3f7ff 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      color: #1d2433;
+    }
+
+    .app {
+      width: min(100%, 640px);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(129, 154, 255, 0.2);
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(44, 62, 120, 0.18);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #768af7 0%, #5d6fe5 35%, #485cc4 100%);
+      color: white;
+      padding: 28px 24px 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      letter-spacing: 0.03em;
+    }
+
+    .header p {
+      margin: 10px 0 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+
+    .content {
+      padding: 24px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid #c8d2ff;
+      font-size: 1rem;
+      background: rgba(245,247,255,0.9);
+      color: #1d2433;
+    }
+
+    input[type="text"]:focus {
+      outline: 2px solid rgba(93,111,229,0.28);
+      border-color: #7187f8;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #738af7 0%, #5b6ee5 100%);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 10px 24px rgba(93,110,229,0.2);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .mic {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      font-size: 1.3rem;
+      padding: 0;
+    }
+
+    .mic.listening {
+      animation: pulse 0.7s infinite ease-in-out;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ef3b3b 100%);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    .location-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .location-btn {
+      flex: 1 1 120px;
+      padding: 10px 12px;
+      background: #eef3ff;
+      color: #4054d4;
+      border: 1px solid #c8d2ff;
+      box-shadow: none;
+      font-size: 0.9rem;
+    }
+
+    .location-btn:hover {
+      background: #e2eaff;
+    }
+
+    .upload-box {
+      border: 2px dashed #c7d3ff;
+      border-radius: 16px;
+      background: #f7f9ff;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .upload-box label {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      color: #4253ca;
+      font-weight: 600;
+    }
+
+    .upload-box input[type="file"] {
+      padding: 8px;
+      background: white;
+      border: 1px solid #dbe3ff;
+      border-radius: 10px;
+    }
+
+    .card {
+      display: none;
+      background: linear-gradient(180deg, #f9fbff 0%, #f0f5ff 100%);
+      border: 1px solid #dfe8ff;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .alert-badge {
+      font-size: clamp(2.6rem, 7vw, 4rem);
+      text-align: center;
+      margin-bottom: 12px;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .sprite-wrap {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+      border: 1px solid #dfe8ff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: inset 0 0 15px rgba(113, 135, 248, 0.1);
+    }
+
+    .sprite-wrap img, .sprite-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: transparent;
+    }
+
+    .weather-text {
+      font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid #dae4ff;
+      border-radius: 12px;
+      padding: 16px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      font-size: 0.92rem;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px 0 10px;
+      color: #4659d8;
+      font-weight: 700;
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 12px;
+      border: 4px solid #e6edff;
+      border-top: 4px solid #7187f8;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 560px) {
+      .content { padding: 18px; }
+      .controls { flex-direction: column; }
+      .mic { width: 100%; }
+      .location-btn { flex: 1 1 45%; }
+      .sprite-wrap { width: 180px; height: 180px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <h1>🐞 Sparky</h1>
-            <p>Weather Assistant</p>
-        </header>
-        
-        <main>
-            <div class="input-section">
-                <input 
-                    type="text" 
-                    id="query" 
-                    placeholder="Ask about the weather..." 
-                    autocomplete="off"
-                >
-                <button id="micButton" class="mic-button" title="Voice input">🎤</button>
-            </div>
-            
-            <button id="locBtn" class="locations-btn">📍 Quick Locations</button>
-            
-            <div id="locationGrid" class="location-grid" style="display: none;">
-                <button class="location-btn" onclick="queryWeather('London')">🇬🇧 London</button>
-                <button class="location-btn" onclick="queryWeather('New York')">🇺🇸 New York</button>
-                <button class="location-btn" onclick="queryWeather('Tokyo')">🇯🇵 Tokyo</button>
-                <button class="location-btn" onclick="queryWeather('Paris')">🇫🇷 Paris</button>
-                <button class="location-btn" onclick="queryWeather('Sydney')">🇦🇺 Sydney</button>
-                <button class="location-btn" onclick="queryWeather('Dubai')">🇦🇪 Dubai</button>
-                <button class="location-btn" onclick="queryWeather('Toronto')">🇨🇦 Toronto</button>
-                <button class="location-btn" onclick="queryWeather('Moscow')">🇷🇺 Moscow</button>
-            </div>
-            
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <p>Sparky is checking the weather...</p>
-            </div>
-            
-            <div id="response" class="response-section">
-                <div id="alert" class="alert-display"></div>
-                <div class="bug-display">🐞</div>
-                <div id="text" class="weather-text"></div>
-            </div>
-        </main>
-        
-        <footer>
-            <p>Stay safe and always check the weather! 🐛✨</p>
-            <p>No API keys required • Works completely offline</p>
-        </footer>
+  <div class="app">
+    <div class="header">
+      <h1>🐞 Sparky</h1>
+      <p>Weather Assistant</p>
     </div>
 
-    <script>
-        // Weather Database - Built-in data
-        const WEATHER_DATABASE = {
-            "london": {
-                "name": "London",
-                "country": "UK",
-                "temp": 18,
-                "feels_like": 16,
-                "humidity": 65,
-                "wind_speed": 12,
-                "description": "Partly Cloudy",
-                "alert": "SAFE"
-            },
-            "new york": {
-                "name": "New York",
-                "country": "USA",
-                "temp": 22,
-                "feels_like": 20,
-                "humidity": 55,
-                "wind_speed": 15,
-                "description": "Clear Sky",
-                "alert": "SAFE"
-            },
-            "tokyo": {
-                "name": "Tokyo",
-                "country": "Japan",
-                "temp": 25,
-                "feels_like": 23,
-                "humidity": 70,
-                "wind_speed": 8,
-                "description": "Sunny",
-                "alert": "SAFE"
-            },
-            "paris": {
-                "name": "Paris",
-                "country": "France",
-                "temp": 16,
-                "feels_like": 15,
-                "humidity": 75,
-                "wind_speed": 20,
-                "description": "Rainy",
-                "alert": "WARNING"
-            },
-            "sydney": {
-                "name": "Sydney",
-                "country": "Australia",
-                "temp": 28,
-                "feels_like": 26,
-                "humidity": 60,
-                "wind_speed": 18,
-                "description": "Partly Cloudy",
-                "alert": "SAFE"
-            },
-            "toronto": {
-                "name": "Toronto",
-                "country": "Canada",
-                "temp": 12,
-                "feels_like": 10,
-                "humidity": 80,
-                "wind_speed": 25,
-                "description": "Cloudy",
-                "alert": "WARNING"
-            },
-            "dubai": {
-                "name": "Dubai",
-                "country": "UAE",
-                "temp": 42,
-                "feels_like": 45,
-                "humidity": 35,
-                "wind_speed": 5,
-                "description": "Hot & Sunny",
-                "alert": "DANGER"
-            },
-            "moscow": {
-                "name": "Moscow",
-                "country": "Russia",
-                "temp": -5,
-                "feels_like": -10,
-                "humidity": 90,
-                "wind_speed": 35,
-                "description": "Snowy",
-                "alert": "WARNING"
-            },
-            "bangkok": {
-                "name": "Bangkok",
-                "country": "Thailand",
-                "temp": 32,
-                "feels_like": 38,
-                "humidity": 85,
-                "wind_speed": 12,
-                "description": "Thunderstorm",
-                "alert": "DANGER"
-            },
-            "seattle": {
-                "name": "Seattle",
-                "country": "USA",
-                "temp": 14,
-                "feels_like": 12,
-                "humidity": 88,
-                "wind_speed": 22,
-                "description": "Heavy Rain",
-                "alert": "WARNING"
-            }
-        };
+    <div class="content">
+      <div class="controls">
+        <input id="query" type="text" placeholder="Ask: 'What's the weather in Menifee?'" />
+        <button id="micBtn" class="mic" aria-label="Voice input">🎤</button>
+      </div>
 
-        const GREETINGS = [
-            "Stay safe out there, buddy! 🐛",
-            "Sparky here with your weather update! ☀️",
-            "Let's check what Mother Nature is cooking up! 🌦️",
-            "Your friendly weatherbug reporting for duty! 🐞",
-            "Time to buzz around and check the skies! 🐝",
-            "Weather watch activated! 📡",
-        ];
+      <div class="location-row">
+        <button class="location-btn" data-location="Menifee">Menifee</button>
+        <button class="location-btn" data-location="Los Angeles">Los Angeles</button>
+        <button class="location-btn" data-location="New York">New York</button>
+        <button class="location-btn" data-location="London">London</button>
+      </div>
 
-        let lastLocation = "London";
+      <div class="upload-box">
+        <label>
+          Upload your own Sparky GIF sprite
+          <input id="spriteUpload" type="file" accept="image/gif,image/png,image/webp,image/jpeg" />
+        </label>
+      </div>
 
-        // Find location from query
-        function findLocation(query) {
-            const queryLower = query.toLowerCase();
-            
-            for (let location of Object.keys(WEATHER_DATABASE)) {
-                if (queryLower.includes(location)) {
-                    return location;
-                }
-            }
-            
-            return lastLocation.toLowerCase();
-        }
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>Sparky is checking the weather...</div>
+      </div>
 
-        // Get weather data
-        function getWeather(location) {
-            const locationKey = location.toLowerCase();
-            
-            if (WEATHER_DATABASE[locationKey]) {
-                lastLocation = locationKey;
-                return WEATHER_DATABASE[locationKey];
-            }
-            
-            return WEATHER_DATABASE[lastLocation.toLowerCase()];
-        }
+      <div id="card" class="card">
+        <div id="alertBadge" class="alert-badge">🟢</div>
 
-        // Process query
-        function processQuery(query) {
-            const location = query.trim() ? findLocation(query) : lastLocation.toLowerCase();
-            const weather = getWeather(location);
-            
-            // Add randomness
-            const weatherCopy = {...weather};
-            weatherCopy.temp += Math.floor(Math.random() * 5) - 2;
-            weatherCopy.feels_like += Math.floor(Math.random() * 5) - 2;
-            weatherCopy.humidity += Math.floor(Math.random() * 10) - 5;
-            weatherCopy.wind_speed += Math.floor(Math.random() * 6) - 3;
-            
-            const alertMessages = {
-                "SAFE": "All clear! Everything looks perfect! 🌞",
-                "WARNING": "⚠️ WARNING! Severe weather nearby! Stay alert!",
-                "DANGER": "🚨 RED ALERT! Dangerous conditions ahead!"
-            };
-            
-            const text = `
-📍 ${weatherCopy.name}, ${weatherCopy.country}
-${weatherCopy.description}
+        <div class="sprite-wrap">
+          <img id="spritePreview" alt="Sparky sprite" src="" />
+        </div>
 
-🌡️  Temperature: ${weatherCopy.temp}°C
-Feels like: ${weatherCopy.feels_like}°C
-💧 Humidity: ${weatherCopy.humidity}%
-💨 Wind: ${weatherCopy.wind_speed} m/s
+        <div id="weatherText" class="weather-text"></div>
+      </div>
+    </div>
+  </div>
 
-${alertMessages[weatherCopy.alert]}
-`;
-            
-            return {
-                "alert": weatherCopy.alert,
-                "text": text.trim(),
-                "greeting": GREETINGS[Math.floor(Math.random() * GREETINGS.length)]
-            };
-        }
+  <script>
+    const WEATHER_DATABASE = {
+      menifee: {
+        city: 'Menifee',
+        country: 'USA',
+        temp: 79,
+        feels_like: 82,
+        humidity: 38,
+        wind: 7,
+        description: 'Sunny and warm',
+        alert: 'SAFE'
+      },
+      'los angeles': {
+        city: 'Los Angeles',
+        country: 'USA',
+        temp: 76,
+        feels_like: 78,
+        humidity: 45,
+        wind: 9,
+        description: 'Clear skies',
+        alert: 'SAFE'
+      },
+      'new york': {
+        city: 'New York',
+        country: 'USA',
+        temp: 71,
+        feels_like: 70,
+        humidity: 60,
+        wind: 11,
+        description: 'Cloudy with a mild breeze',
+        alert: 'SAFE'
+      },
+      london: {
+        city: 'London',
+        country: 'UK',
+        temp: 61,
+        feels_like: 60,
+        humidity: 72,
+        wind: 14,
+        description: 'Light rain',
+        alert: 'WARNING'
+      },
+      dubai: {
+        city: 'Dubai',
+        country: 'UAE',
+        temp: 98,
+        feels_like: 104,
+        humidity: 19,
+        wind: 6,
+        description: 'Very hot and dry',
+        alert: 'DANGER'
+      },
+      paris: {
+        city: 'Paris',
+        country: 'France',
+        temp: 64,
+        feels_like: 62,
+        humidity: 78,
+        wind: 16,
+        description: 'Rain showers',
+        alert: 'WARNING'
+      }
+    };
 
-        // Speech Recognition
-        const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognizer = null;
-        let isListening = false;
-        
-        if (recognition) {
-            recognizer = new recognition();
-            recognizer.continuous = false;
-            recognizer.interimResults = false;
-            recognizer.language = 'en-US';
-            
-            recognizer.onstart = () => {
-                isListening = true;
-                document.getElementById('micButton').classList.add('listening');
-            };
-            
-            recognizer.onend = () => {
-                isListening = false;
-                document.getElementById('micButton').classList.remove('listening');
-            };
-            
-            recognizer.onresult = (event) => {
-                let transcript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
-                }
-                document.getElementById('query').value = transcript;
-                queryWeather(transcript);
-            };
-        }
-        
-        document.getElementById('micButton').addEventListener('click', () => {
-            if (recognizer) {
-                if (isListening) {
-                    recognizer.stop();
-                } else {
-                    document.getElementById('query').value = '';
-                    recognizer.start();
-                }
-            }
-        });
-        
-        document.getElementById('locBtn').addEventListener('click', function() {
-            const grid = document.getElementById('locationGrid');
-            grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
-        });
-        
-        document.getElementById('query').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                queryWeather(e.target.value);
-            }
-        });
-        
-        function queryWeather(query) {
-            if (!query.trim()) return;
-            
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('response').style.display = 'none';
-            document.getElementById('locationGrid').style.display = 'none';
-            
-            // Simulate processing delay
-            setTimeout(() => {
-                const data = processQuery(query);
-                document.getElementById('loading').style.display = 'none';
-                displayWeather(data);
-            }, 600);
-        }
-        
-        function displayWeather(data) {
-            const alerts = { SAFE: '🟢', WARNING: '🟡', DANGER: '🔴' };
-            document.getElementById('alert').textContent = alerts[data.alert];
-            document.getElementById('text').textContent = data.text;
-            document.getElementById('response').style.display = 'block';
-        }
-        
-        // Load initial weather
-        window.addEventListener('load', () => {
-            const data = processQuery("");
-            displayWeather(data);
-        });
-    </script>
+    const DEFAULT_GIF = "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAACH5BAAAAAAALAAAAAAQABAAACjpSpq7n0eV6k+Va8aGGzWwAAAAAElFTkSuQmCC";
+    let currentSprite = DEFAULT_GIF;
+    let lastLocation = 'Menifee';
+
+    function setSpriteByWeather(alert) {
+      const spriteMap = {
+        SAFE: "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAACH5BAAAAAAALAAAAAAQABAAACjpSpq7n0eV6k+Va8aGGzWwAAAAAElFTkSuQmCC",
+        WARNING: "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAACH5BAAAAAAALAAAAAAQABAAACjpSpq7n0eV6k+Va8aGGzWwAAAAAElFTkSuQmCC",
+        DANGER: "data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAACH5BAAAAAAALAAAAAAQABAAACjpSpq7n0eV6k+Va8aGGzWwAAAAAElFTkSuQmCC"
+      };
+      const selected = spriteMap[alert] || DEFAULT_GIF;
+      document.getElementById('spritePreview').src = currentSprite || selected;
+    }
+
+    function getWeather(location) {
+      const key = String(location || lastLocation).trim().toLowerCase();
+      if (WEATHER_DATABASE[key]) {
+        lastLocation = key;
+        return WEATHER_DATABASE[key];
+      }
+
+      const matches = Object.keys(WEATHER_DATABASE).find(k => k.includes(key) || key.includes(k));
+      if (matches) {
+        lastLocation = matches;
+        return WEATHER_DATABASE[matches];
+      }
+
+      return WEATHER_DATABASE.menifee;
+    }
+
+    function processWeatherInput(rawInput) {
+      const location = rawInput && rawInput.trim() ? rawInput.trim() : lastLocation;
+      const weather = getWeather(location);
+      const temp = weather.temp + Math.floor(Math.random() * 4) - 1;
+      const feelsLike = weather.feels_like + Math.floor(Math.random() * 4) - 1;
+      const humidity = Math.min(100, Math.max(0, weather.humidity + Math.floor(Math.random() * 12) - 5));
+      const wind = Math.max(0, weather.wind + Math.floor(Math.random() * 6) - 2);
+      const alertMap = {
+        SAFE: '🟢',
+        WARNING: '🟡',
+        DANGER: '🔴'
+      };
+
+      const message = `
+📍 ${weather.city}, ${weather.country}
+🌤️ ${weather.description}
+🌡️ Temperature: ${temp}°F
+Feels like: ${feelsLike}°F
+💧 Humidity: ${humidity}%
+💨 Wind: ${wind} mph
+
+${alertMap[weather.alert]} ${weather.alert === 'SAFE' ? 'All clear!' : weather.alert === 'WARNING' ? 'Weather warning nearby.' : 'Danger alert!'}
+      `;
+
+      return {
+        alert: alertMap[weather.alert],
+        text: message.trim(),
+        location: weather.city
+      };
+    }
+
+    function showWeather(data) {
+      const card = document.getElementById('card');
+      document.getElementById('alertBadge').textContent = data.alert;
+      document.getElementById('weatherText').textContent = data.text;
+      setSpriteByWeather(data.alert.replace('🟢','SAFE').replace('🟡','WARNING').replace('🔴','DANGER'));
+      card.style.display = 'block';
+    }
+
+    function askWeather(query) {
+      if (!query.trim()) return;
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('card').style.display = 'none';
+
+      setTimeout(() => {
+        const result = processWeatherInput(query);
+        document.getElementById('loading').style.display = 'none';
+        showWeather(result);
+      }, 600);
+    }
+
+    document.getElementById('query').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') askWeather(event.target.value);
+    });
+
+    document.querySelectorAll('.location-btn').forEach(button => {
+      button.addEventListener('click', () => askWeather(button.dataset.location));
+    });
+
+    document.getElementById('micBtn').addEventListener('click', () => {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Speech recognition is not supported in this browser.');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      document.getElementById('micBtn').classList.add('listening');
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('query').value = transcript;
+        askWeather(transcript);
+      };
+
+      recognition.onend = () => {
+        document.getElementById('micBtn').classList.remove('listening');
+      };
+    });
+
+    document.getElementById('spriteUpload').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      currentSprite = url;
+      document.getElementById('spritePreview').src = url;
+    });
+
+    // Default load: Menifee
+    askWeather('Menifee');
+  </script>
 </body>
 </html>
